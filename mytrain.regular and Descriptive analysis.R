@@ -1,6 +1,5 @@
 #Get Regular Dataset
 head(mytrain)
-
 mytrain.sort <- mytrain[order(row.names(mytrain)),]
 #deal with Wilderness_Areas
 temp.wa<-cbind(row.names(mytrain),mytrain[,12:15])
@@ -20,6 +19,29 @@ names(mytrain.re)<-c("id","elevation","aspect","slope","hd.h","vd.h","hd.r",
                      "hs.9","hs.n","hs.3","hd.f","WArea","SoilType","CoverType")
 mytrain.re$CoverType<-as.factor(mytrain.re$CoverType)
 write.csv(mytrain.re,"mytrain.regular.csv")
+
+
+#Get Regular Dataset for mytest
+head(mytest)
+mytest.sort <- mytest[order(row.names(mytest)),]
+#deal with Wilderness_Areas
+temp.wa.t<-cbind(row.names(mytest),mytest[,12:15])
+names(temp.wa.t)<-c("rn",names(temp.wa.t)[-1])
+WArea.t<-melt(temp.wa.t, id=c("rn"))
+WArea.t<-WArea.t[which(WArea.t$value=='1'),1:2]
+WArea.t<-WArea.t[order(WArea.t$rn),]
+#deal with Soil_Types
+temp.st.t<-cbind(row.names(mytest),mytest[,16:55])
+names(temp.st.t)<-c("rn",names(temp.st.t)[-1])
+ST.t<-melt(temp.st.t, id=c("rn"))
+ST.t<-ST.t[which(ST.t$value=='1'),1:2]
+ST.t<-ST.t[order(ST.t$rn),]
+#new data
+mytest.re<-cbind(mytest.sort[,1:11],WArea.t[,2],ST.t[,2],mytest.sort[,56])
+names(mytest.re)<-c("id","elevation","aspect","slope","hd.h","vd.h","hd.r",
+                     "hs.9","hs.n","hs.3","hd.f","WArea","SoilType","CoverType")
+mytest.re$CoverType<-as.factor(mytest.re$CoverType)
+write.csv(mytest.re,"mytest.regular.csv")
 #Descriptive Data Analysis
 attach(mytrain.re)
 summary(mytrain.re$CoverType)
