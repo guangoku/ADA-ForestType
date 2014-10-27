@@ -1,0 +1,84 @@
+train<-read.csv("C:\\Users\\nz2231\\Downloads\\train.csv")
+glm(Cover_Type~.,data=train)
+#install.packages("tree")
+library(tree)
+#install.packages("reshape2")
+library(reshape2)
+#install.packages("rpart")
+library(rpart)
+install.packages("party")
+library(party)
+
+tree1<-tree(as.factor(Cover_Type)~.,data=train)
+
+#misclassification error rate is .39
+#too high 
+#number of nodes is 8, not overfitting
+#try combining the soil type sparse matrix
+
+Soil_Type_m=train[,16:55]
+#Soil_Type=rep(0,15120)
+#for (j in 1:15120){
+#	for (i in 1:40){
+#		if (Soil_Type_m[j,i]==1) Soil_Type[j]<-Soil_Type_m[j,i]+Soil_Type[j]
+#	}
+#}
+#Soil_Type
+#Only one soil_type per observation
+
+Soil_Type0=rep(0,15120)
+for (j in 1:15120){
+	for (i in 1:40){
+		if (Soil_Type_m[j,i]==1) Soil_Type0[j]<-i
+	}
+}
+Soil_Type=as.factor(Soil_Type0)
+Cover_Type1=as.factor(train$Cover_Type)
+train1<-data.frame(train[,-(16:56)],Soil_Type,Cover_Type1)
+
+tree2<-tree(Cover_Type1~.-Id,train1)
+summary(tree2)
+plot(tree2)
+text(tree2)
+#misclassification error rate is .35
+#still too high 
+#number of nodes is 8, not overfitting
+#try merge Wilderness_Area variables
+#Mingyu's Code
+#temp.wa<-cbind(row.names(train1),train1[,12:15])
+#names(temp.wa)<-c("rn",names(temp.wa)[-1])
+#WArea<-melt(temp.wa, id="rn")
+#WArea<-WArea[which(WArea$value==1),1:2]
+#WArea<-WArea[order(as.numeric(WArea$rn)),]
+#end of Mingyun's code
+temp.wa=train1[,12:15]
+WArea=rep(0,15120)
+for (j in 1:15120) {
+	for (i in 1:4) {
+		if (temp.wa[j,i]==1) WArea[j]=i
+	}
+}
+WArea=as.factor(WArea)
+train2<-data.frame(train1[,-(12:15)],WArea)
+names(train2)
+tree3<-tree(Cover_Type1~.-Id,train2)
+summary(tree3)
+plot(tree3)
+text(tree3)
+
+#tree() not able to perform classification, because soil_type has more than 32 levels;
+
+#use rpart
+
+tree4<-rpart(Cover_Type1~.-Id,train2)
+plot(tree4)
+text(tree4)
+#very time consuming
+
+
+
+#use ctree() in package party
+tree5=ctree(Cover_Type1~.-Id,data=train2)
+plot(tree5)
+
+
