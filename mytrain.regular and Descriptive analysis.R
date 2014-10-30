@@ -20,7 +20,6 @@ names(mytrain.re)<-c("id","elevation","aspect","slope","hd.h","vd.h","hd.r",
 mytrain.re$CoverType<-as.factor(mytrain.re$CoverType)
 write.csv(mytrain.re,"mytrain.regular.csv")
 
-
 #Get Regular Dataset for mytest
 head(mytest)
 mytest.sort <- mytest[order(row.names(mytest)),]
@@ -43,24 +42,50 @@ names(mytest.re)<-c("id","elevation","aspect","slope","hd.h","vd.h","hd.r",
 mytest.re$CoverType<-as.factor(mytest.re$CoverType)
 write.csv(mytest.re,"mytest.regular.csv")
 #Descriptive Data Analysis
-attach(mytrain.re)
-summary(mytrain.re$CoverType)
+head(mytrain.re)
+head(mytest.re)
+total<-rbind(mytrain.re,mytest.re)
+summary(total$CoverType)
 #1    2    3    4    5    6    7 
-#1519 1507 1517 1520 1498 1501 1522
-corr<-cor(mytrain.re[,2:11])
-            #elevation       aspect       slope        hd.h        vd.h         hd.r         hs.9         hs.n        hs.3        hd.f
-#elevation  1.000000000 -0.007295716 -0.30996046  0.42030716  0.12417658  0.576555161  0.098857311  0.220361226  0.09054617  0.43948587
-#aspect    -0.007295716  1.000000000  0.02927343  0.04917738  0.06386967  0.067054082 -0.593798248  0.319918531  0.63566622 -0.05456021
-#slope     -0.309960457  0.029273431  1.00000000 -0.05788387  0.26168274 -0.275927796 -0.206923453 -0.615845363 -0.32110685 -0.23566081
-#hd.h       0.420307156  0.049177381 -0.05788387  1.00000000  0.65401463  0.212445209 -0.037386139  0.083905952  0.08628569  0.15599595
-#vd.h       0.124176575  0.063869670  0.26168274  0.65401463  1.00000000  0.011010172 -0.101974169 -0.133615365 -0.02967289 -0.01643619
-#hd.r       0.576555161  0.067054082 -0.27592780  0.21244521  0.01101017  1.000000000 -0.004225309  0.239702828  0.17443605  0.47914472
-#hs.9       0.098857311 -0.593798248 -0.20692345 -0.03738614 -0.10197417 -0.004225309  1.000000000 -0.004651506 -0.78012110  0.07836192
-#hs.n       0.220361226  0.319918531 -0.61584536  0.08390595 -0.13361537  0.239702828 -0.004651506  1.000000000  0.60719784  0.11776473
-#hs.3       0.090546172  0.635666216 -0.32110685  0.08628569 -0.02967289  0.174436053 -0.780121095  0.607197840  1.00000000  0.04023379
-#hd.f       0.439485874 -0.054560206 -0.23566081  0.15599595 -0.01643619  0.479144716  0.078361923  0.117764733  0.04023379  1.00000000
+#2160 2160 2160 2160 2160 2160 2160 
+corr<-cor(total[,1:10])
+#          elevation      aspect       slope        hd.h        vd.h         hd.r         hs.9        hs.n        hs.3        hd.f
+#elevation  1.00000000 -0.01109605 -0.31263950  0.41271152  0.12209160  0.578658991  0.097900204  0.21578205  0.08951758  0.44356343
+#aspect    -0.01109605  1.00000000  0.02814799  0.04073212  0.05641234  0.066184194 -0.593997428  0.32491229  0.63502236 -0.05216918
+#slope     -0.31263950  0.02814799  1.00000000 -0.05597593  0.26531398 -0.277048754 -0.200072122 -0.61261287 -0.32688704 -0.23952722
+#hd.h       0.41271152  0.04073212 -0.05597593  1.00000000  0.65214247  0.203397008 -0.033802678  0.08004720  0.08083254  0.15881693
+#vd.h       0.12209160  0.05641234  0.26531398  0.65214247  1.00000000  0.011554979 -0.095929918 -0.13294827 -0.03555906 -0.01504833
+#hd.r       0.57865899  0.06618419 -0.27704875  0.20339701  0.01155498  1.000000000 -0.003398026  0.24068384  0.17388200  0.48638565
+#hs.9       0.09790020 -0.59399743 -0.20007212 -0.03380268 -0.09592992 -0.003398026  1.000000000 -0.01371238 -0.77996474  0.07814412
+#hs.n       0.21578205  0.32491229 -0.61261287  0.08004720 -0.13294827  0.240683844 -0.013712384  1.00000000  0.61452639  0.12209774
+#hs.3       0.08951758  0.63502236 -0.32688704  0.08083254 -0.03555906  0.173881997 -0.779964742  0.61452639  1.00000000  0.04316247
+#hd.f       0.44356343 -0.05216918 -0.23952722  0.15881693 -0.01504833  0.486385645  0.078144122  0.12209774  0.04316247  1.00000000
 library(ellipse)
 plotcorr(corr)
 # Do the same, but with colors corresponding to value
 colorfun <- colorRamp(c("#CC0000","white","#3366CC"), space="Lab")
 plotcorr(corr, col=rgb(colorfun((corr+1)/2), maxColorValue=255))
+#Radar Plot
+test0<-by(total[,c(1:10)],total$CoverType , FUN=colMeans)
+test1<-do.call(rbind,test0)
+stars(test1, locations = c(0, 0),  radius  =  FALSE, col.lines = 1:10, key.loc = c(0, 0))
+#histograms
+require(ggplot2)
+library(grid)
+library(gridExtra)
+
+head(total)
+d1<-ggplot(total, aes(x = elevation, fill = CoverType)) + geom_density(alpha = 0.3)
+d2<-ggplot(total, aes(x = aspect, fill = CoverType)) + geom_density(alpha = 0.3)
+d3<-ggplot(total, aes(x = slope, fill = CoverType)) + geom_density(alpha = 0.3)
+d4<-ggplot(total, aes(x = hd.h, fill = CoverType)) + geom_density(alpha = 0.3)
+d5<-ggplot(total, aes(x = vd.h, fill = CoverType)) + geom_density(alpha = 0.3)
+d6<-ggplot(total, aes(x = hd.r, fill = CoverType)) + geom_density(alpha = 0.3)
+d7<-ggplot(total, aes(x = hs.9, fill = CoverType)) + geom_density(alpha = 0.3)
+d8<-ggplot(total, aes(x = hs.n, fill = CoverType)) + geom_density(alpha = 0.3)
+d9<-ggplot(total, aes(x = hs.3, fill = CoverType)) + geom_density(alpha = 0.3)
+d10<-ggplot(total, aes(x = hd.f, fill = CoverType)) + geom_density(alpha = 0.3)
+d123<-grid.arrange(d1, d2,d3,ncol = 3, main = "Density Plot for elevation,aspect and slope")
+d45610<-grid.arrange(d4, d5,d6,d10,ncol = 2, main = "Density Plot for hd.h,vd.h,hd.r and hd.f")
+d789<-grid.arrange(d7,d8,d9,ncol = 3, main = "Density Plot Hillshade at 9am, noon and 3pm ")
+ggplot(total, aes(CoverType, elevationt)) + geom_boxplot(aes(fill=CoverType))
